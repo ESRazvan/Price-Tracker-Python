@@ -1,0 +1,21 @@
+/*properties for sidebarwidget class */
+#SidebarWidget { 
+    border-right: 2px solid #000000; 
+    background-color: transparent;
+}
+
+#SidebarWidget QPushButton {
+    border-radius: 5px;
+    padding: 15px 75px;
+    margin: 10px;
+    border: 1px solid #000000;
+    background-color: transparent;
+}
+
+#SidebarWidget QLabel { 
+    font-size: 20px;
+    color: #000000; 
+    border: none;
+    margin-bottom: 50px;
+    border-bottom: 1px solid #000000;
+}
