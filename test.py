@@ -1,8 +1,9 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QPushButton,
                             QLabel, QVBoxLayout, QHBoxLayout, QFrame, QGridLayout,
-                            QStackedWidget)
-from PyQt5.QtCore import Qt, pyqtSignal
+                            QStackedWidget, QCheckBox)
+from PyQt5.QtCore import Qt, pyqtSignal, QRect, QPoint, QSize
+from PyQt5.QtGui import QPainter, QPen, QColor
 
 #create one widget with vbox layout to contain a label and a button, the widget constitutes a cell inside gridlayout of settings dash
 def vbox_cell_widget(label_text: str, button_text: str, parent = None) -> QWidget:
@@ -18,6 +19,48 @@ def vbox_cell_widget(label_text: str, button_text: str, parent = None) -> QWidge
     cell_container.setFixedHeight(100)
 
     return cell_container
+
+
+#Custom toggle button built on top of existing checkbox widget
+class ToggleButton(QCheckBox):
+    toggle_btn_clicked = pyqtSignal()
+
+    def __init__(self, parent = None) -> None:
+        super().__init__()
+        self.setFixedSize(60, 30)
+        self.global_position = self.mapToGlobal(QPoint(0,0))
+
+    #Override the hitbutton function to set the clickable area of the button as the whole rect that it occupies
+    def hitButton(self, pos):
+        return self.rect().contains(pos)
+
+    def paintEvent(self, event) -> None:
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+        unchecked_circle_position = QPoint(self.global_position.x() + 15, 
+                                           self.global_position.y() + self.height() // 2)
+        
+        checked_circle_position = QPoint(self.global_position.x() + self.width() - 15, 
+                                         self.global_position.y() + self.height() // 2)
+
+        if self.checkState() == False:
+            painter.setPen(QColor("#3F4047"))
+            painter.setBrush(QColor("#2F3036"))
+            center_coord = unchecked_circle_position
+        else:
+            painter.setPen(QColor("#929292"))
+            painter.setBrush(QColor("#93E1D8"))
+            center_coord = checked_circle_position
+
+        #draw border and circle inside of it regardless of state
+        painter.drawRoundedRect(self.rect(), 17.5, 30.0)
+
+        painter.setPen(QColor("#FFFFFF"))
+        painter.setBrush(QColor("#FFFFFF"))
+        painter.drawEllipse(center_coord, 10, 10)
+
+
 
 class SidebarWidget(QFrame):
     #set custom signals so that mainwindow class can serve as the interface between sidebar and content area, separating them
@@ -65,8 +108,11 @@ class SettingsDashboard(QWidget):
         cell1 = vbox_cell_widget("apasa", "aici", self)
         cell2 = vbox_cell_widget("apasa", "aici", self)
 
+        togglebutton = ToggleButton()
+
         grid_layout.addWidget(cell1, 0, 0)
         grid_layout.addWidget(cell2, 0, 1)
+        grid_layout.addWidget(togglebutton, 1, 0)
 
 #stacked widget to display only one widget
 class ContentArea(QStackedWidget):
@@ -74,8 +120,6 @@ class ContentArea(QStackedWidget):
         super().__init__()
         for widget in args:
             self.addWidget(widget)
-        #self.addWidget(args[0])
-        #self.addWidget(args[1])
 
     def widget_select(self, widget : QWidget) -> None:
         self.setCurrentWidget(widget)
@@ -111,8 +155,11 @@ class PriceTrackerApp(QMainWindow):
 
         #when the signal is emitted from sidebar button the widget select function of content area is called
         #with the specific widget object that we want to display as a parameter(lambda is needed so the function isnt called instantly)
-        self.sidebar.tracker_btn_clicked.connect(lambda: self.content_area.widget_select(self.price_tracker_dash))
-        self.sidebar.settings_btn_clicked.connect(lambda: self. content_area.widget_select(self.settings_dash))
+        self.sidebar.tracker_btn_clicked.connect(
+            lambda: self.content_area.widget_select(self.price_tracker_dash))
+        
+        self.sidebar.settings_btn_clicked.connect(
+            lambda: self. content_area.widget_select(self.settings_dash))
 
         self.setCentralWidget(central_container)
 

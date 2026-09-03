@@ -57,7 +57,7 @@ def parse_extract_data(raw_data: requests.Response, current_site: str) -> dict:
     item_data: dict = item_data[0]
     return item_data
 
-#
+#name is usually too big, extract until brand name or first 3 words
 def extract_name(name: str, brand: str) -> str:
     name = name.strip('"')
     brand = brand.strip('"')
