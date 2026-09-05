@@ -1,66 +1,108 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QPushButton,
-                            QLabel, QVBoxLayout, QHBoxLayout, QFrame, QGridLayout,
-                            QStackedWidget, QCheckBox)
-from PyQt5.QtCore import Qt, pyqtSignal, QRect, QPoint, QSize
-from PyQt5.QtGui import QPainter, QPen, QColor
+                             QLabel, QVBoxLayout, QHBoxLayout, QFrame, QGridLayout,
+                             QStackedWidget, QCheckBox)
+from PyQt5.QtCore import (Qt, pyqtSignal, QPoint, QPropertyAnimation, QEasingCurve,
+                          pyqtProperty)
+from PyQt5.QtGui import QPainter, QColor
 
 #create one widget with vbox layout to contain a label and a button, the widget constitutes a cell inside gridlayout of settings dash
-def vbox_cell_widget(label_text: str, button_text: str, parent = None) -> QWidget:
+def vbox_cell_widget(label_text: str, parent = None) -> QWidget:
     cell_container = QWidget(parent, objectName = "grid_cell")
     cell_layout = QVBoxLayout(cell_container)
 
-    button = QPushButton(button_text, cell_container)
+    button = ToggleButton(cell_container)
     label = QLabel(label_text, cell_container)
 
-    cell_layout.addWidget(button)
     cell_layout.addWidget(label)
+    cell_layout.addWidget(button)
 
     cell_container.setFixedHeight(100)
 
     return cell_container
 
-
 #Custom toggle button built on top of existing checkbox widget
 class ToggleButton(QCheckBox):
-    toggle_btn_clicked = pyqtSignal()
-
-    def __init__(self, parent = None) -> None:
+    def __init__(self, parent = None, title = None) -> None:
         super().__init__()
         self.setFixedSize(60, 30)
-        self.global_position = self.mapToGlobal(QPoint(0,0))
+        self.text = title
+
+        #initial unchecked position of circle
+        #putting _ before a variable name is a convention that shows this variable is protected inside a class
+        self._x_pos = 15
+
+        #handle animation logic
+        self.clicked.connect(self.button_clicked)
+
+        #button colors
+        self.outline_color = "#3F4047"
+        self.unchecked_color = "#2F3036"
+        self.checked_color = "#93E1D8"
+
+        #animation speficic variables
+        self.easing_curve = QEasingCurve.OutSine
+        self.animation_duration = 300 #ms
 
     #Override the hitbutton function to set the clickable area of the button as the whole rect that it occupies
     def hitButton(self, pos):
         return self.rect().contains(pos)
 
+    #define a getter for the x coordinate position to be able to animate it
+    #using a @pyqtProperty() decorator registers the property inside of qt's internal c++ engine
+    @pyqtProperty(int)
+    def xPos(self) -> int:
+        return self._x_pos
+
+    @xPos.setter
+    def xPos(self, value) -> None:
+        if self._x_pos != value:
+            self._x_pos = value
+            self.update()
+
+    def button_clicked(self) -> None:
+        if self.checkState() == False:
+            self.check_to_uncheck()
+        else:
+            self.uncheck_to_check()
+
+    def uncheck_to_check(self) -> None:
+            self.animation = QPropertyAnimation(self, b'xPos') #(object which holds this property, property name)
+            self.animation.setDuration(self.animation_duration)
+            self.animation.setStartValue(self.xPos)
+            self.animation.setEndValue(self.width() - 15)
+            self.animation.setEasingCurve(self.easing_curve)
+            self.animation.start()
+
+    def check_to_uncheck(self) -> None:
+            self.animation = QPropertyAnimation(self, b'xPos')
+            self.animation.setDuration(self.animation_duration)
+            self.animation.setStartValue(self.xPos)
+            self.animation.setEndValue(15)
+            self.animation.setEasingCurve(self.easing_curve)
+            self.animation.start()
+
     def paintEvent(self, event) -> None:
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
-        unchecked_circle_position = QPoint(self.global_position.x() + 15, 
-                                           self.global_position.y() + self.height() // 2)
-        
-        checked_circle_position = QPoint(self.global_position.x() + self.width() - 15, 
-                                         self.global_position.y() + self.height() // 2)
+        circle_position = QPoint(self.xPos, self.height() // 2)
 
         if self.checkState() == False:
-            painter.setPen(QColor("#3F4047"))
-            painter.setBrush(QColor("#2F3036"))
-            center_coord = unchecked_circle_position
+            painter.setPen(QColor(self.outline_color))
+            painter.setBrush(QColor(self.unchecked_color))
+            center_coord = circle_position
         else:
-            painter.setPen(QColor("#929292"))
-            painter.setBrush(QColor("#93E1D8"))
-            center_coord = checked_circle_position
+            painter.setPen(QColor(self.outline_color))
+            painter.setBrush(QColor(self.checked_color))
+            center_coord = circle_position
 
         #draw border and circle inside of it regardless of state
         painter.drawRoundedRect(self.rect(), 17.5, 30.0)
 
-        painter.setPen(QColor("#FFFFFF"))
-        painter.setBrush(QColor("#FFFFFF"))
+        painter.setPen(QColor("white"))
+        painter.setBrush(QColor("white"))
         painter.drawEllipse(center_coord, 10, 10)
-
-
 
 class SidebarWidget(QFrame):
     #set custom signals so that mainwindow class can serve as the interface between sidebar and content area, separating them
@@ -105,8 +147,8 @@ class SettingsDashboard(QWidget):
         grid_layout = QGridLayout(self)
 
         #make one qhboxlayout with a label and a button inside and then add it to the grid as a cell.
-        cell1 = vbox_cell_widget("apasa", "aici", self)
-        cell2 = vbox_cell_widget("apasa", "aici", self)
+        cell1 = vbox_cell_widget("#######################", self)
+        cell2 = vbox_cell_widget("apasa", self)
 
         togglebutton = ToggleButton()
 
