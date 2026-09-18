@@ -1,14 +1,14 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QPushButton,
                              QLabel, QVBoxLayout, QHBoxLayout, QFrame, QGridLayout,
-                             QStackedWidget, QCheckBox)
+                             QStackedWidget, QCheckBox, QLineEdit)
 from PyQt5.QtCore import (Qt, pyqtSignal, QPoint, QPropertyAnimation, QEasingCurve,
                           pyqtProperty)
 from PyQt5.QtGui import QPainter, QColor
 
 #create one widget with vbox layout to contain a label and a button, the widget constitutes a cell inside gridlayout of settings dash
 def vbox_cell_widget(label_text: str, parent = None) -> QWidget:
-    cell_container = QWidget(parent, objectName = "grid_cell")
+    cell_container = QWidget(parent, objectName = 'grid_cell')
     cell_layout = QVBoxLayout(cell_container)
 
     button = ToggleButton(cell_container)
@@ -36,9 +36,9 @@ class ToggleButton(QCheckBox):
         self.clicked.connect(self.button_clicked)
 
         #button colors
-        self.outline_color = "#3F4047"
-        self.unchecked_color = "#2F3036"
-        self.checked_color = "#93E1D8"
+        self.outline_color = '#3F4047'
+        self.unchecked_color = '#2F3036'
+        self.checked_color = '#93E1D8'
 
         #animation speficic variables
         self.easing_curve = QEasingCurve.OutSine
@@ -100,8 +100,8 @@ class ToggleButton(QCheckBox):
         #draw border and circle inside of it regardless of state
         painter.drawRoundedRect(self.rect(), 17.5, 30.0)
 
-        painter.setPen(QColor("white"))
-        painter.setBrush(QColor("white"))
+        painter.setPen(QColor('white'))
+        painter.setBrush(QColor('white'))
         painter.drawEllipse(center_coord, 10, 10)
 
 class SidebarWidget(QFrame):
@@ -113,14 +113,12 @@ class SidebarWidget(QFrame):
         super().__init__()
         layout = QVBoxLayout(self)
 
-        self.setObjectName("SidebarWidget")
+        self.setObjectName('SidebarWidget')
 
-        self.tracker_btn = QPushButton("Price Tracker", self)
-        self.settings_btn = QPushButton("Settings", self)
+        self.tracker_btn = QPushButton('Price Tracker', self)
+        self.settings_btn = QPushButton('Settings', self)
 
-        
-
-        self.sidebar_label = QLabel("Price Tracker App", self)
+        self.sidebar_label = QLabel('Price Tracker App', self)
 
         layout.addWidget(self.sidebar_label, alignment = Qt.AlignHCenter)
         layout.addWidget(self.tracker_btn, alignment = Qt.AlignHCenter)
@@ -135,13 +133,16 @@ class SidebarWidget(QFrame):
 class PriceTrackerDashboard(QWidget):
     def __init__(self, parent = None) -> None:
         super().__init__()
+        self.product_list = None
         layout = QVBoxLayout(self)
 
-        self.setObjectName("PriceTrackerWidget")
+        self.setObjectName('PriceTrackerWidget')
 
-        self.test_label = QLabel("Caine", self)
+        #display item list
 
-        layout.addWidget(self.test_label)
+
+        """self.text_input_box = QLineEdit()
+        layout.addWidget(self.text_input_box)"""
 
 class SettingsDashboard(QWidget):
     def __init__(self, parent = None) -> None:
@@ -149,8 +150,8 @@ class SettingsDashboard(QWidget):
         grid_layout = QGridLayout(self)
 
         #make one qhboxlayout with a label and a button inside and then add it to the grid as a cell.
-        cell1 = vbox_cell_widget("#######################", self)
-        cell2 = vbox_cell_widget("apasa", self)
+        cell1 = vbox_cell_widget('#######################', self)
+        cell2 = vbox_cell_widget('apasa', self)
 
         togglebutton = ToggleButton()
 
@@ -182,7 +183,7 @@ class PriceTrackerApp(QMainWindow):
 
 
     def initUI(self) -> None:
-        self.setWindowTitle("Price Tracker App")
+        self.setWindowTitle('Price Tracker App')
 
         central_container = QWidget()
         main_layout = QHBoxLayout(central_container)
@@ -207,16 +208,19 @@ class PriceTrackerApp(QMainWindow):
 
         self.setCentralWidget(central_container)
 
-def main() -> None:
+def ui_initialization(item_list: list[dict], add_product: callable) -> None:
     app = QApplication([])
 
     #initialize styles globally from an external qss file
-    with open ("style.qss", "r") as f:
+    with open ('style.qss', 'r') as f:
         app.setStyleSheet(f.read())
 
     main_window = PriceTrackerApp()
+
+    main_window.price_tracker_dash.product_list = item_list
+
     main_window.show()
 
     sys.exit(app.exec_())
 
-main()
+ui_initialization(None, None)
