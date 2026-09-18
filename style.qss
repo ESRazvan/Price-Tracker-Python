@@ -6,16 +6,18 @@
 
 #SidebarWidget QPushButton {
     border-radius: 5px;
-    padding: 15px 75px;
+    padding: 15px 15px;
     margin: 10px;
+    width: 150px;
     border: 1px solid #000000;
     background-color: transparent;
 }
 
 #SidebarWidget QPushButton:hover {
     border-radius: 5px;
-    padding: 15px 75px;
+    padding: 15px 15px;
     margin: 10px;
+    width: 150px;
     border: 1px solid #000000;
     background-color: red;
 }

@@ -115,8 +115,10 @@ class SidebarWidget(QFrame):
 
         self.setObjectName("SidebarWidget")
 
-        self.tracker_btn = QPushButton("test1", self)
-        self.settings_btn = QPushButton("test2", self)
+        self.tracker_btn = QPushButton("Price Tracker", self)
+        self.settings_btn = QPushButton("Settings", self)
+
+        
 
         self.sidebar_label = QLabel("Price Tracker App", self)
 
