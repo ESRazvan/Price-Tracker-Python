@@ -101,7 +101,14 @@ def read_item_links() -> list[str]:
 
 def read_settings() -> dict:
     with open('settings.json', 'r') as f:
-        settings_dict = json.loads(f)
+        settings_dict = json.load(f)
+    print(settings_dict)
+    return settings_dict
+
+#rewrite whole settings json when a setting is changed
+def change_settings(changed_settings_dict) -> None:
+    with open('settings.json', 'w') as f:
+        json.dump(changed_settings_dict, f)
 
 def refresh_products() -> None:
     item_link_list = read_item_links()

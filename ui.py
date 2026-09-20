@@ -222,5 +222,3 @@ def ui_initialization(item_list: list[dict], add_product: callable) -> None:
     main_window.show()
 
     sys.exit(app.exec_())
-
-ui_initialization(None, None)
